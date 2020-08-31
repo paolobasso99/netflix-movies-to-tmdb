@@ -34,7 +34,6 @@ jobs:
           TRAKT_LIST: ${{ secrets.TRAKT_LIST }}
 
   deploy:
-    if: ${{ startsWith(secrets.SSH_KEY, '-') }}
     needs: [build]
     runs-on: ubuntu-latest
 
