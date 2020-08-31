@@ -10,10 +10,11 @@ class MoviesService {
    * Create an instance of MoviesService.
    *
    * @param {string} tmdbApiKey TMDB API key.
+   * @returns {MoviesService} The instance
    */
   constructor(tmdbApiKey) {
-    this.moviesDB = new MoviesDB();
     this.tmdbApi = new TmdbApi(tmdbApiKey);
+    this.moviesDB = new MoviesDB();
   }
 
   /**

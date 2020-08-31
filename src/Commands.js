@@ -1,21 +1,30 @@
-const axios = require("axios");
+const axios = require('axios');
+const MoviesDB = require('./movies/MoviesDB');
+const TmdbApi = require('./movies/TmdbApi');
+const TmdbAuthenticator = require('./movies/TmdbAuthenticator');
 
-module.exports = class Commands {
+const { NODE_ENV, TMDB_API_KEY, TMDB_LIST } = process.env;
+/**
+ * @class Commands class.
+ */
+class Commands {
+  /**
+   * Add a movie to the database and to the TMDB list mannualy.
+   *
+   * @param {(number|string)} id TMDB or IMDB id of the movie.
+   * @param {string} title The title of the movie
+   */
   static async add(id, title) {
-    const MoviesDB = require("./movies/MoviesDB");
-    const TraktAPI = require("./trakt/TraktAPI");
-
-    const { TRAKT_CLIENT_ID } = process.env;
-    const traktAPI = new TraktAPI(TRAKT_CLIENT_ID);
+    const tmdbApi = new TmdbApi(TMDB_API_KEY);
 
     // If IMDB id is provided transfor to TMDB id
-    if (typeof id === "string" && id.startsWith("tt")) {
-      console.log("Transforming IMDB id to a TMDB id...");
+    if (typeof id === 'string' && id.startsWith('tt')) {
+      console.log('Transforming IMDB id to a TMDB id...');
       try {
-        id = await traktAPI.gettmdbIdbyIMDBId(id);
+        id = await tmdbApi.getTmdbIdbyImdbId(id);
 
         if (!id) {
-          throw "Unable to find the TMDB id of this IMDB id!";
+          throw 'Unable to find the TMDB id of this IMDB id!';
         }
       } catch (error) {
         console.error(error);
@@ -23,161 +32,127 @@ module.exports = class Commands {
     }
 
     if (id) {
-      try {
-        // Add to DB
-        console.log("Adding movie to the database...");
+      const moviesDB = new MoviesDB();
 
-        const moviesDB = new MoviesDB();
+      // Add movie to DB
+      console.log('Adding movie to the database...');
+      try {
         await moviesDB.createMoviesTableIfNotExists();
         await moviesDB.addMovie(id, title);
-        console.log("Movie successfully added to the database!");
-
-        // Add to Trakt
-        console.log("Adding movie to the Trakt playlist...");
-
-        const TraktAuthenticator = require("./trakt/TraktAuthenticator");
-
-        // Get access token
-        const { TRAKT_CLIENT_SECRET } = process.env;
-        const traktAuthenticator = new TraktAuthenticator(
-          TRAKT_CLIENT_ID,
-          TRAKT_CLIENT_SECRET
-        );
-        const accessToken = await traktAuthenticator.getSavedAccessCode();
-
-        // Save movies
-        if (accessToken) {
-          const { TRAKT_USERNAME, TRAKT_LIST } = process.env;
-
-          await traktAPI.addMoviesBytmdbIds(
-            [id],
-            accessToken,
-            TRAKT_USERNAME,
-            TRAKT_LIST
-          );
-          console.log("Movie successfully added to the Trakt playlist!");
-        } else {
-          // Create Token and restart
-          console.error(
-            "Trakt's user has not been authenticated, please use the 'auth' command"
-          );
-        }
+        console.log('Movie added to the database!');
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
+
+      // Add to TMDB list
+      console.log('Adding movie to the list...');
+      const tmdbAuthenticator = new TmdbAuthenticator(TMDB_API_KEY);
+      const sessionId = await tmdbAuthenticator.getStoredSessionId();
+
+      if (sessionId) {
+        await tmdbApi.addMovieToList(sessionId, id, TMDB_LIST);
+      } else {
+        throw "There was an error with TMDB authentication. Try the 'auth' command again.";
+      }
+      console.log('Done!');
     }
   }
 
+  /**
+   * Command to start the TMDB authentication process.
+   */
   static async auth() {
-    const TraktAuthenticator = require("./trakt/TraktAuthenticator");
+    const tmdbAuthenticator = new TmdbAuthenticator(TMDB_API_KEY);
 
     try {
-      const { TRAKT_CLIENT_ID, TRAKT_CLIENT_SECRET } = process.env;
-      const traktAuthenticator = new TraktAuthenticator(
-        TRAKT_CLIENT_ID,
-        TRAKT_CLIENT_SECRET
-      );
-
-      traktAuthenticator.start();
+      await tmdbAuthenticator.start();
     } catch (error) {
       console.error(error);
     }
   }
 
+  /**
+   * Command to add the movies currently on Netflix to the TMDB list.
+   */
   static async start() {
-    // Load env vars
-    const {
-      MOVIES_SOURCE_URL,
-      TMDB_API_KEY,
-      TRAKT_CLIENT_ID,
-      TRAKT_CLIENT_SECRET,
-      TRAKT_USERNAME,
-      TRAKT_LIST,
-      HEALTHCHECKS_URL,
-    } = process.env;
+    const MoviesService = require('./movies/MoviesService');
+    const { MOVIES_SOURCE_URL, HEALTHCHECKS_URL } = process.env;
 
     if (HEALTHCHECKS_URL) {
-      await axios.get(HEALTHCHECKS_URL + "/start");
+      await axios.get(HEALTHCHECKS_URL + '/start');
     }
 
-    const MoviesService = require("./movies/MoviesService");
-    const MoviesDB = require("./movies/MoviesDB");
-    const TraktAPI = require("./trakt/TraktAPI");
-    const TraktAuthenticator = require("./trakt/TraktAuthenticator");
-
-    // Get access token
-    const traktAuthenticator = new TraktAuthenticator(
-      TRAKT_CLIENT_ID,
-      TRAKT_CLIENT_SECRET
-    );
-    const accessToken = await traktAuthenticator.getSavedAccessCode();
+    // Get session id
+    const tmdbAuthenticator = new TmdbAuthenticator(TMDB_API_KEY);
+    const sessionId = await tmdbAuthenticator.getStoredSessionId();
 
     // Save movies
-    if (accessToken) {
+    if (sessionId) {
       // Construct objects
       const moviesDB = new MoviesDB();
-      const traktAPI = new TraktAPI(TRAKT_CLIENT_ID);
+      const tmdbApi = new TmdbApi(TMDB_API_KEY);
       const moviesService = new MoviesService(MOVIES_SOURCE_URL, TMDB_API_KEY);
 
-      // Create Movies table
-      await moviesDB.createMoviesTableIfNotExists();
-
       // Get titles
-      console.log("Getting titles currently on Netflix...");
+      console.log('Getting titles currently on Netflix...');
       const titles = await moviesService.getTitlesOnNetflix();
-      console.log(titles.length + " titles found!");
+      console.log(titles.length + ' titles found!');
 
       // Find TMDB id
-      console.log("Getting the TMDB id of each title...");
-      const tmdbIds = await moviesService.getTmdbIdsByTitles(titles);
-      const missing = titles.length - tmdbIds.length;
+      console.log('Getting the TMDB id of each title...');
+      const ids = await moviesService.getTmdbIdsByTitles(titles);
+      const missing = titles.length - ids.length;
       console.log(
-        tmdbIds.length +
-          " id found! We could not find the id of " +
+        ids.length +
+          ' id found! We could not find the id of ' +
           missing +
-          " titles."
+          ' titles.'
       );
 
-      // Add to Trakt playlist
-      console.log("Adding movies to the Trakt playlist...");
-      const addResult = await traktAPI.addMoviesBytmdbIds(
-        tmdbIds,
-        accessToken,
-        TRAKT_USERNAME,
-        TRAKT_LIST
+      // Add to TMDB list
+      console.log('Adding movies to the TMDB playlist...');
+      const addResult = await tmdbApi.addMoviesToList(
+        sessionId,
+        ids,
+        TMDB_LIST
       );
 
-      console.log(
-        `Added ${addResult.added.movies} movies to the existing ${addResult.existing.movies}; we were unable to find ${addResult.not_found.movies.length} movies`
-      );
+      if (addResult) {
+        console.log(`Successfully added movies to the TMDB list`);
 
-      // Update description
-      console.log("Updating list description...");
-      const now = new Date();
-      
-      const description = `**Automated** Trakt list of movies that have been on Netflix.
-      In this list there are also the movies which are no longer on Netflix, starting from 28 August 2020.
-      Based on https://github.com/paolobasso99/trakt-netflix-movies-list
-      Last update: ${now.getDate()} ${now.toLocaleString("en-GB", {
-        month: "long",
-      })} ${now.getFullYear()}`;
+        // Update description
+        console.log('Updating list description...');
+        const now = new Date();
 
-      await traktAPI.updateListDescription(
-        accessToken,
-        TRAKT_USERNAME,
-        TRAKT_LIST,
-        description
-      );
+        const description = `**Automated** TMDB list of movies that have been on Netflix.
+          In this list there are also the movies which are no longer on Netflix, starting from 31 August 2020.
+          Based on https://github.com/paolobasso99/netflix-movies-to-tmdb
+          Last update: ${now.getDate()} ${now.toLocaleString('en-GB', {
+          month: 'long',
+        })} ${now.getFullYear()}`;
 
-      if (HEALTHCHECKS_URL) {
-        await axios.get(HEALTHCHECKS_URL);
+        const descriptionResult = await tmdbApi.updateListDescription(
+          sessionId,
+          TMDB_LIST,
+          description
+        );
+
+        if (descriptionResult) {
+          if (HEALTHCHECKS_URL) {
+            await axios.get(HEALTHCHECKS_URL);
+          }
+
+          console.log('Done!');
+        } else {
+          throw 'We were unable to update the description of the list!';
+        }
       }
-
-      console.log("Done!");
     } else {
       console.error(
-        "Trakt's user has not been authenticated, use the 'auth' comand"
+        "TMDB's user has not been authenticated, use the 'auth' comand"
       );
     }
   }
-};
+}
+
+module.exports = Commands;

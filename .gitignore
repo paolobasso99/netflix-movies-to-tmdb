@@ -1,5 +1,6 @@
 .env
 node_modules/
 .history/
-movies.db
-trakt.json
+movies.db*
+test.db*
+tmdb.json

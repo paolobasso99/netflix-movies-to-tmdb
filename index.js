@@ -5,21 +5,22 @@ const argv = require("yargs")
   .usage("$0 command")
   .command(
     "start",
-    "add current movies on Netflix to the Trakt playlist",
+    "add current movies on Netflix to the TMDB playlist",
     (argv) => Commands.start()
   )
-  .command("auth", "start Trakt authentication process", (argv) =>
+  .command("auth", "start TMDB authentication process", (argv) =>
     Commands.auth()
   )
   .command(
     "add [id] [title]",
-    "add a movie to the database and to the Trakt playlist",
+    "add a movie to the database and to the TMDB playlist",
     (yargs) => {
       yargs.positional("id", {
         describe: "the TMDB id or IMDB id of the movie",
       });
 
       yargs.positional("title", {
+        type: 'string',
         describe: "the Netflix title of the movie",
       });
     },

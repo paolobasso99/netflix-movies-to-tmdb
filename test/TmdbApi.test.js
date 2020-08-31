@@ -1,6 +1,6 @@
 require('dotenv').config();
-const { expect } = require('chai');
-const assert = require('assert');
+process.env.NODE_ENV = 'test';
+const { assert } = require('chai');
 
 const { TMDB_API_KEY } = process.env;
 
@@ -40,5 +40,28 @@ describe('TMDB API: deepSearchMovieId', () => {
 
     assert.equal(conlon, false);
     assert.equal(parentheses, false);
+  });
+});
+
+describe('TMDB API: getTmdbIdbyImdbId', () => {
+  it('should return the correct id', async () => {
+    const tmdbId = await tmdbApi.getTmdbIdbyImdbId('tt3460252');
+
+    assert.equal(tmdbId, 273248);
+  });
+
+  it('should return false for fake film', async () => {
+    const tmdbId = await tmdbApi.searchMovieId('adgasg');
+
+    assert.equal(tmdbId, false);
+  });
+});
+
+describe('TMDB API: authToken', () => {
+  it('should return a request token', async () => {
+    const token = await tmdbApi.authToken();
+
+    assert.isString(token);
+    assert.isAtLeast(token.length, 2);
   });
 });
