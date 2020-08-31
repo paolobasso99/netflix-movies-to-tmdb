@@ -1,0 +1,42 @@
+{
+  "name": "trakt-netflix-movies-list",
+  "version": "1.0.0",
+  "description": "This Node.js CLI application pushes the movies that are currently on Netflix to a Trakt playlist. You can see the result here: https://trakt.tv/users/bassopaolo/lists/movies-on-netflix?sort=released,asc",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "start": "node index.js start",
+    "auth": "node index.js auth",
+    "add": "node index.js add"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paolobasso99/trakt-netflix-movies-list.git"
+  },
+  "author": "Paolo Basso",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/paolobasso99/trakt-netflix-movies-list/issues"
+  },
+  "homepage": "https://github.com/paolobasso99/trakt-netflix-movies-list#readme",
+  "dependencies": {
+    "app-root-path": "^3.0.0",
+    "axios": "^0.19.2",
+    "dotenv": "^8.2.0",
+    "sqlite": "^4.0.12",
+    "sqlite3": "^5.0.0",
+    "yargs": "^15.4.1"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "eslint": "^7.7.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-mocha": "^8.0.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-security": "^1.4.0",
+    "mocha": "^8.1.3"
+  }
+}
