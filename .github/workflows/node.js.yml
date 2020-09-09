@@ -28,10 +28,7 @@ jobs:
         env:
           MOVIES_SOURCE_URL: ${{ secrets.MOVIES_SOURCE_URL }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-          TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
-          TRAKT_CLIENT_SECRET: ${{ secrets.TRAKT_CLIENT_SECRET }}
-          TRAKT_USERNAME: ${{ secrets.TRAKT_USERNAME }}
-          TRAKT_LIST: ${{ secrets.TRAKT_LIST }}
+          TMDB_LIST: ${{ secrets.TRAKT_CLIENT_ID }}
 
   deploy:
     needs: [build]

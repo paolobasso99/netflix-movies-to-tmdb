@@ -21,31 +21,31 @@ class TmdbAuthenticator {
   /**
    * Start the authentication process.
    *
-   * @returns {(string|boolean)} The session id or false if error.
+   * @returns {(string|boolean)} The access_token or false if error.
    */
   async start() {
     try {
       console.log('Requesting token...');
-      const authToken = await this.tmdbApi.authToken();
+      const requestToken = await this.tmdbApi.requestToken();
 
-      if (authToken) {
+      if (requestToken) {
         console.log(
-          'Visit: https://www.themoviedb.org/authenticate/' + authToken
+          'Visit: https://www.themoviedb.org/auth/access?request_token=' + requestToken
         );
 
         await this.askQuestion(
           'Did you validate the token? Press any key to continue...'
         );
 
-        const sessionId = await this.tmdbApi.authSesion(authToken);
+        const accessToken = await this.tmdbApi.accessToken(requestToken);
 
-        if (sessionId) {
-          console.log('Saving session id...');
-          this.storeSessionId(sessionId);
-          console.log('Session id saved!');
+        if (accessToken) {
+          console.log('Saving access_token...');
+          this.storeAccessToken(accessToken);
+          console.log('access_token saved!');
         }
 
-        return sessionId;
+        return accessToken;
       }
     } catch (error) {
       console.error(error);
@@ -55,17 +55,17 @@ class TmdbAuthenticator {
   }
 
   /**
-   * Store a session id as json.
+   * Store a access_token as json in "@/tmdb.json".
    *
-   * @param {string} sessionId The session id.
+   * @param {string} sessionId The access_token.
    */
-  async storeSessionId(sessionId) {
-    if (sessionId) {
+  async storeAccessToken(accessToken) {
+    if (accessToken) {
       const fs = require('fs');
       const appRoot = require('app-root-path');
 
       const data = {
-        sessionId: sessionId,
+        accessToken: accessToken,
       };
 
       await fs.writeFile(
@@ -80,18 +80,18 @@ class TmdbAuthenticator {
   }
 
   /**
-   * Get the stored session id.
+   * Get the stored access_token.
    *
-   * @returns {(string|boolean)} The session id or false if no session id is found.
+   * @returns {(string|boolean)} The access_token or false if no access_token is found.
    */
-  async getStoredSessionId() {
+  async getStoredAccessToken() {
     const readFile = util.promisify(fs.readFile);
 
     try {
       const data = await readFile('tmdb.json');
-      const { sessionId } = JSON.parse(data);
+      const { accessToken } = JSON.parse(data);
 
-      return sessionId;
+      return accessToken;
     } catch (error) {
       console.error(error);
     }

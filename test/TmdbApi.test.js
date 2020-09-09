@@ -57,9 +57,9 @@ describe('TMDB API: getTmdbIdbyImdbId', () => {
   });
 });
 
-describe('TMDB API: authToken', () => {
-  it('should return a request token', async () => {
-    const token = await tmdbApi.authToken();
+describe('TMDB API: requestToken', () => {
+  it('should return a request_token', async () => {
+    const token = await tmdbApi.requestToken();
 
     assert.isString(token);
     assert.isAtLeast(token.length, 2);

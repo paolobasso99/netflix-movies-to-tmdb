@@ -16,7 +16,6 @@ class TmdbApi {
 
   /**
    * Search the id of the movie by the given query.
-   * Return the id if found, false if no movie is found.
    *
    * @param {string} query The query to search the id by.
    * @returns {(boolean|number)} The id of the movie or false if no movie is found
@@ -27,17 +26,17 @@ class TmdbApi {
         'https://api.themoviedb.org/4/search/movie',
         {
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json;charset=utf-8',
+            Authorization: 'Bearer ' + this.tmdbApiKey,
           },
           params: {
-            api_key: this.tmdbApiKey,
             query: query,
             include_adult: true,
           },
         }
       );
 
-      if (response.data.results.length > 0) {
+      if (response.data && response.data.results.length > 0) {
         return response.data.results[0].id;
       } else {
         return false;
@@ -87,16 +86,16 @@ class TmdbApi {
         `https://api.themoviedb.org/3/find/${imdbId}`,
         {
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json;charset=utf-8',
+            Authorization: 'Bearer ' + this.tmdbApiKey,
           },
           params: {
-            api_key: this.tmdbApiKey,
             external_source: 'imdb_id',
           },
         }
       );
 
-      if (response.data.movie_results.length > 0) {
+      if (response.data && response.data.movie_results.length > 0) {
         return response.data.movie_results[0].id;
       } else {
         return false;
@@ -107,26 +106,25 @@ class TmdbApi {
   }
 
   /**
-   * Request an auth token.
-   * See https://developers.themoviedb.org/3/authentication/create-request-token for reference.
+   * Request an auth request_token.
+   * See https://developers.themoviedb.org/4/auth/create-request-token for reference.
    *
-   * @returns {(string|boolean)} The token or false if there is an error.
+   * @returns {(string|boolean)} The request_token or false if there is an error.
    */
-  async authToken() {
+  async requestToken() {
     try {
-      const response = await axios.get(
-        `https://api.themoviedb.org/3/authentication/token/new`,
+      const response = await axios.post(
+        `https://api.themoviedb.org/4/auth/request_token`,
+        '',
         {
           headers: {
-            'Content-Type': 'application/json',
-          },
-          params: {
-            api_key: this.tmdbApiKey,
+            'Content-Type': 'application/json;charset=utf-8',
+            'Authorization': 'Bearer ' + this.tmdbApiKey,
           },
         }
       );
 
-      if (response.data.success) {
+      if (response.data && response.data.success) {
         return response.data.request_token;
       } else {
         return false;
@@ -137,30 +135,28 @@ class TmdbApi {
   }
 
   /**
-   * Request an auth session.
+   * Request an auth access_token.
    * See https://developers.themoviedb.org/3/authentication/create-session for reference.
    *
-   * @returns {(string|boolean)} The session id or false if there is an error.
+   * @returns {(string|boolean)} The access_token or false if there is an error.
    */
-  async authSesion(requestToken) {
+  async accessToken(requestToken) {
     try {
       const response = await axios.post(
-        `https://api.themoviedb.org/3/authentication/session/new`,
+        'https://api.themoviedb.org/4/auth/access_token',
         {
           request_token: requestToken,
         },
         {
           headers: {
-            'Content-Type': 'application/json',
-          },
-          params: {
-            api_key: this.tmdbApiKey,
+            'Content-Type': 'application/json;charset=utf-8',
+            Authorization: 'Bearer ' + this.tmdbApiKey,
           },
         }
       );
 
       if (response.data && response.data.success) {
-        return response.data.session_id;
+        return response.data.access_token;
       } else {
         return false;
       }
@@ -170,38 +166,9 @@ class TmdbApi {
   }
 
   /**
-   * Add the movie to the list.
-   *
-   * @param {string} sessionId The session id.
-   * @param {string} movieId The movieTMDB id.
-   * @param {number} list The list.
-   */
-  async addMovieToList(sessionId, movieId, list) {
-    try {
-      const response = await axios.post(
-        `https://api.themoviedb.org/3/list/${list}/add_item`,
-        {
-          media_id: movieId,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          params: {
-            api_key: this.tmdbApiKey,
-            session_id: sessionId,
-          },
-        }
-      );
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  /**
    * Update the description of a list.
    *
-   * @param {string} accessToken The access token.
+   * @param {string} accessToken The access_token.
    * @param {number} list TMDB list id.
    * @param {string} description The new description
    * @returns {boolean} If the update was successful.
@@ -215,7 +182,7 @@ class TmdbApi {
         },
         {
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json;charset=utf-8',
             Authorization: 'Bearer ' + accessToken,
           },
         }
@@ -234,7 +201,7 @@ class TmdbApi {
   /**
    * Add multiple movies to a list.
    *
-   * @param {string} accessToken The access token.
+   * @param {string} accessToken The access_token.
    * @param {Array<number>} ids The TMDB ids of the movies.
    * @param {string} list TMDB list id.
    * @returns {boolean} If it was successful.
@@ -243,21 +210,21 @@ class TmdbApi {
     // Transform ids to movie objects
     const movies = ids.map((id) => {
       return {
-        "media_type": "movie",
-        "media_id": id,
-      }
-    })
+        media_type: 'movie',
+        media_id: id,
+      };
+    });
 
     // Add them
     try {
       const response = await axios.put(
         `https://api.themoviedb.org/4/list/${list}/items`,
         {
-          "items": movies,
+          items: movies,
         },
         {
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json;charset=utf-8',
             Authorization: 'Bearer ' + accessToken,
           },
         }
