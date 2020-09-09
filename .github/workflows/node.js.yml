@@ -29,6 +29,11 @@ jobs:
           MOVIES_SOURCE_URL: ${{ secrets.MOVIES_SOURCE_URL }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           TMDB_LIST: ${{ secrets.TRAKT_CLIENT_ID }}
+          PROXY_ENABLED: ${{ secrets.PROXY_ENABLED }}
+          PROXY_HOST: ${{ secrets.PROXY_HOST }}
+          PROXY_PORT: ${{ secrets.PROXY_PORT }}
+          PROXY_USERNAME: ${{ secrets.PROXY_USERNAME }}
+          PROXY_PASSWORD: ${{ secrets.PROXY_PASSWORD }}
 
   deploy:
     needs: [build]

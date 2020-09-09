@@ -55,20 +55,22 @@ class TmdbApi {
    * @returns {(boolean|number)} The id of the movie or false if no movie is found
    */
   async deepSearchMovieId(title) {
-    // Search by raw title
-    let id = await this.searchMovieId(title);
-    if (id) return id;
-
-    // Search by title removing content in parentheses
-    if (title.includes('(') && title.includes(')')) {
-      id = await this.searchMovieId(title.replace(/ *\([^)]*\) */g, ''));
+    if (title) {
+      // Search by raw title
+      let id = await this.searchMovieId(title);
       if (id) return id;
-    }
 
-    // Search by title removing content after a colon
-    if (title.includes(':')) {
-      id = await this.searchMovieId(title.split(':')[0]);
-      if (id) return id;
+      // Search by title removing content in parentheses
+      if (title.includes('(') && title.includes(')')) {
+        id = await this.searchMovieId(title.replace(/ *\([^)]*\) */g, ''));
+        if (id) return id;
+      }
+
+      // Search by title removing content after a colon
+      if (title.includes(':')) {
+        id = await this.searchMovieId(title.split(':')[0]);
+        if (id) return id;
+      }
     }
 
     return false;
@@ -119,7 +121,7 @@ class TmdbApi {
         {
           headers: {
             'Content-Type': 'application/json;charset=utf-8',
-            'Authorization': 'Bearer ' + this.tmdbApiKey,
+            Authorization: 'Bearer ' + this.tmdbApiKey,
           },
         }
       );

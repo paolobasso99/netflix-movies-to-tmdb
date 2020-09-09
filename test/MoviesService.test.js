@@ -2,7 +2,7 @@ require('dotenv').config();
 process.env.NODE_ENV = 'test';
 const { assert } = require('chai');
 
-const { MOVIES_SOURCE_URL, TMDB_API_KEY } = process.env;
+const { MOVIES_SOURCE_URL, TMDB_API_KEY, PROXY_ENABLED } = process.env;
 
 const MoviesService = require('../src/movies/MoviesService');
 const MoviesDB = require('../src/movies/MoviesDB');
@@ -11,12 +11,27 @@ const moviesService = new MoviesService(TMDB_API_KEY);
 const moviesDB = new MoviesDB();
 
 describe('MovieService: getTitlesOnNetflix', () => {
-  it('should return a non empty array', async () => {
+  it('should return a non empty array (with proxy if enabled)', async () => {
     const movies = await moviesService.getTitlesOnNetflix(MOVIES_SOURCE_URL);
 
     assert.isArray(movies);
     assert.isAtLeast(movies.length, 1);
   });
+
+  if(PROXY_ENABLED) {
+    // Disable proxy
+    process.env.PROXY_ENABLED = ''
+
+    it('should return a non empty array (without proxy)', async () => {
+      const movies = await moviesService.getTitlesOnNetflix(MOVIES_SOURCE_URL);
+  
+      assert.isArray(movies);
+      assert.isAtLeast(movies.length, 1);
+    });
+
+    // Re enable proxy
+    process.env.PROXY_ENABLED = 'yes'
+  }
 });
 
 describe('MovieService: getTmdbIdByTitle', () => {

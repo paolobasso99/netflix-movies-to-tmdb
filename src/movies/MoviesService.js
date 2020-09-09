@@ -23,9 +23,32 @@ class MoviesService {
    * @param {string} sourceURL
    * @returns {Array<string>} The array of titles.
    */
-  async getTitlesOnNetflix(sourceURL) {
+  async getTitlesOnNetflix(
+    sourceURL,
+    proxyHost,
+    proxyPort,
+    proxyUsername,
+    proxyPassword
+  ) {
+    let axiosClient = null;
+
+    // Configure proxy
+    if (proxyHost && proxyPort) {
+      const SocksProxyAgent = require('socks-proxy-agent');
+      const httpsAgent = new SocksProxyAgent({
+        host: proxyHost,
+        port: proxyPort,
+        userId: proxyUsername,
+        password: proxyPassword,
+      });
+
+      axiosClient = await axios.create({ httpsAgent });
+    } else {
+      axiosClient = await axios.create();
+    }
+
     try {
-      const response = await axios.get(sourceURL);
+      const response = await axiosClient.get(sourceURL);
 
       return response.data.map((movie) => {
         return movie.title.trim().replace("\\'", "'");
@@ -80,7 +103,7 @@ class MoviesService {
       }
     }
 
-    return false
+    return false;
   }
 }
 

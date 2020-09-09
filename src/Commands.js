@@ -47,10 +47,10 @@ class Commands {
       // Add to TMDB list
       console.log('Adding movie to the list...');
       const tmdbAuthenticator = new TmdbAuthenticator(TMDB_API_KEY);
-      const sessionId = await tmdbAuthenticator.getStoredSessionId();
+      const accessToken = await tmdbAuthenticator.getStoredAccessToken();
 
-      if (sessionId) {
-        await tmdbApi.addMovieToList(sessionId, id, TMDB_LIST);
+      if (accessToken) {
+        await tmdbApi.addMoviesToList(accessToken, [id], TMDB_LIST);
       } else {
         throw "There was an error with TMDB authentication. Try the 'auth' command again.";
       }
@@ -84,18 +84,39 @@ class Commands {
 
     // Get session id
     const tmdbAuthenticator = new TmdbAuthenticator(TMDB_API_KEY);
-    const sessionId = await tmdbAuthenticator.getStoredSessionId();
+    const accessToken = await tmdbAuthenticator.getStoredAccessToken();
 
     // Save movies
-    if (sessionId) {
+    if (accessToken) {
       // Construct objects
       const moviesDB = new MoviesDB();
       const tmdbApi = new TmdbApi(TMDB_API_KEY);
-      const moviesService = new MoviesService(MOVIES_SOURCE_URL, TMDB_API_KEY);
+      const moviesService = new MoviesService(TMDB_API_KEY);
 
       // Get titles
       console.log('Getting titles currently on Netflix...');
-      const titles = await moviesService.getTitlesOnNetflix();
+
+      const {
+        PROXY_ENABLED,
+        PROXY_HOST,
+        PROXY_PORT,
+        PROXY_USERNAME,
+        PROXY_PASSWORD,
+      } = process.env;
+
+      let titles = [];
+
+      if (PROXY_ENABLED) {
+        titles = await moviesService.getTitlesOnNetflix(
+          MOVIES_SOURCE_URL,
+          PROXY_HOST,
+          PROXY_PORT,
+          PROXY_USERNAME,
+          PROXY_PASSWORD
+        );
+      } else {
+        titles = await moviesService.getTitlesOnNetflix(MOVIES_SOURCE_URL);
+      }
       console.log(titles.length + ' titles found!');
 
       // Find TMDB id
@@ -112,7 +133,7 @@ class Commands {
       // Add to TMDB list
       console.log('Adding movies to the TMDB playlist...');
       const addResult = await tmdbApi.addMoviesToList(
-        sessionId,
+        accessToken,
         ids,
         TMDB_LIST
       );
@@ -124,15 +145,19 @@ class Commands {
         console.log('Updating list description...');
         const now = new Date();
 
-        const description = `**Automated** TMDB list of movies that have been on Netflix.
-          In this list there are also the movies which are no longer on Netflix, starting from 31 August 2020.
-          Based on https://github.com/paolobasso99/netflix-movies-to-tmdb
-          Last update: ${now.getDate()} ${now.toLocaleString('en-GB', {
-          month: 'long',
-        })} ${now.getFullYear()}`;
+        const lastUpdate =
+          now.getDate() +
+          now.toLocaleString('en-GB', { month: 'long' }) +
+          now.getFullYear();
+
+        const description =
+          '**Automated** TMDB list of movies that have been on Netflix.<br>Based on https://github.com/paolobasso99/netflix-movies-to-tmdb <br>Last update: ' +
+          lastUpdate;
+
+        console.log(description);
 
         const descriptionResult = await tmdbApi.updateListDescription(
-          sessionId,
+          accessToken,
           TMDB_LIST,
           description
         );
@@ -144,7 +169,9 @@ class Commands {
 
           console.log('Done!');
         } else {
-          throw 'We were unable to update the description of the list!';
+          console.error(
+            'We were unable to update the description of the list!'
+          );
         }
       }
     } else {
