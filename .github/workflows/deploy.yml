@@ -1,0 +1,54 @@
+# This workflow will do a clean install of node dependencies, build the source code, run tests across different versions of node and deploy
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Test and Deploy
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run build --if-present
+      - name: Test
+        run: npm test
+        env:
+          MOVIES_SOURCE_URL: ${{ secrets.MOVIES_SOURCE_URL }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_LIST: ${{ secrets.TRAKT_CLIENT_ID }}
+          PROXY_ENABLED: ${{ secrets.PROXY_ENABLED }}
+          PROXY_HOST: ${{ secrets.PROXY_HOST }}
+          PROXY_PORT: ${{ secrets.PROXY_PORT }}
+          PROXY_USERNAME: ${{ secrets.PROXY_USERNAME }}
+          PROXY_PASSWORD: ${{ secrets.PROXY_PASSWORD }}
+
+  deploy:
+    needs: [build]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH and deploy node app
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /srv/${{github.event.pull_request.head.repo.full_name}}
+            git pull origin master
+            npm install --production
