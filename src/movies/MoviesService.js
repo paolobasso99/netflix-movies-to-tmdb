@@ -50,9 +50,14 @@ class MoviesService {
     try {
       const response = await axiosClient.get(sourceURL);
 
-      return response.data.map((movie) => {
-        return movie.title.trim().replace("\\'", "'");
-      });
+      if(response.data) {
+        return response.data.map((movie) => {
+          return movie.title.trim().replace("\\'", "'");
+        });
+      } else {
+        return false;
+      }
+
     } catch (error) {
       console.error(error);
     }
