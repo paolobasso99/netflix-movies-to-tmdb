@@ -241,6 +241,36 @@ class TmdbApi {
 
     return false;
   }
+
+  /**
+   * Get a list.
+   *
+   * @param {string} accessToken The access_token.
+   * @param {string} list TMDB list id.
+   * @returns {(boolean|object)} The list or false if no list is found.
+   */
+  async getList(accessToken, list) {
+    // Add them
+    try {
+      const response = await axios.get(
+        `https://api.themoviedb.org/4/list/${list}`,
+        {
+          headers: {
+            'Content-Type': 'application/json;charset=utf-8',
+            Authorization: 'Bearer ' + accessToken,
+          },
+        }
+      );
+
+      if (response.data && response.data.results.length > 0) {
+        return response.data.results;
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
+    return false;
+  }
 }
 
 module.exports = TmdbApi;

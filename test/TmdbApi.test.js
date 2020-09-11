@@ -2,7 +2,7 @@ require('dotenv').config();
 process.env.NODE_ENV = 'test';
 const { assert } = require('chai');
 
-const { TMDB_API_KEY } = process.env;
+const { TMDB_API_KEY, TMDB_LIST } = process.env;
 
 const TmdbApi = require('../src/movies/TmdbApi');
 const tmdbApi = new TmdbApi(TMDB_API_KEY);
