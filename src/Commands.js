@@ -132,11 +132,24 @@ class Commands {
             ' titles.'
         );
 
+        // Get ids of movies already added and filter
+        console.log('Getting ids of movies already in the list...');
+        const idsAlreadyAdded = await tmdbApi.getMoviesIdsInList(
+          accessToken,
+          TMDB_LIST
+        );
+
+        console.log('Filtering already added movies...');
+        const filtered = ids.filter((id) => {
+          return !idsAlreadyAdded.includes(id);
+        });
+        console.log(filtered);
+
         // Add to TMDB list
         console.log('Adding movies to the TMDB playlist...');
         const addResult = await tmdbApi.addMoviesToList(
           accessToken,
-          ids,
+          filtered,
           TMDB_LIST
         );
 

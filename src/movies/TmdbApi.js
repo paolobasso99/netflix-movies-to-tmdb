@@ -243,14 +243,13 @@ class TmdbApi {
   }
 
   /**
-   * Get a list.
+   * Get the array of ids of movies in a list.
    *
    * @param {string} accessToken The access_token.
    * @param {string} list TMDB list id.
-   * @returns {(boolean|object)} The list or false if no list is found.
+   * @returns {(boolean|Array<number>)} The array of ids or false if no list is found.
    */
-  async getList(accessToken, list) {
-    // Add them
+  async getMoviesIdsInList(accessToken, list) {
     try {
       const response = await axios.get(
         `https://api.themoviedb.org/4/list/${list}`,
@@ -262,8 +261,13 @@ class TmdbApi {
         }
       );
 
-      if (response.data && response.data.results.length > 0) {
-        return response.data.results;
+      if (response.data) {
+        // Get the id, see https://developers.themoviedb.org/4/list/get-list
+        const idsArray = Object.keys(response.data.object_ids);
+        return idsArray.map((id) => {
+          id = parseInt(id.split(':')[1]);
+          console.log(id);
+        });
       }
     } catch (error) {
       console.error(error);
