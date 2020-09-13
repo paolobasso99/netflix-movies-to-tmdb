@@ -194,7 +194,7 @@ class TmdbApi {
         return response.data.success;
       }
     } catch (error) {
-      console.error(error);
+      console.error(error.response.data.errors);
     }
 
     return false;
@@ -245,7 +245,6 @@ class TmdbApi {
   /**
    * Get the array of ids of movies in a list.
    *
-   * @param {string} accessToken The access_token.
    * @param {string} list TMDB list id.
    * @returns {(boolean|Array<number>)} The array of ids or false if no list is found.
    */
@@ -262,7 +261,7 @@ class TmdbApi {
       );
 
       if (response.data) {
-        // Get the id, see https://developers.themoviedb.org/4/list/get-list
+        // Get the id, see the example at https://developers.themoviedb.org/4/list/get-list
         const idsArray = Object.keys(response.data.object_ids);
         return idsArray.map((item) => {
           return parseInt(item.split(':')[1]);

@@ -47,6 +47,7 @@ class MoviesService {
       axiosClient = await axios.create();
     }
 
+    // Get movies
     try {
       const response = await axiosClient.get(sourceURL);
 

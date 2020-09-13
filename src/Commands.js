@@ -153,40 +153,40 @@ class Commands {
 
           if (addResult) {
             console.log(`Successfully added movies to the TMDB list`);
-
-            // Update description
-            console.log('Updating list description...');
-            const now = new Date();
-
-            const lastUpdate =
-              now.getDate() +
-              ' ' +
-              now.toLocaleString('en-GB', { month: 'long' }) +
-              ' ' +
-              now.getFullYear();
-
-            const description =
-              '**Automated** TMDB list of movies that have been on Netflix.<br>Based on https://github.com/paolobasso99/netflix-movies-to-tmdb <br>Last update: ' +
-              lastUpdate;
-
-            const descriptionResult = await tmdbApi.updateListDescription(
-              accessToken,
-              TMDB_LIST,
-              description
-            );
-
-            if (descriptionResult) {
-              if (HEALTHCHECKS_URL) {
-                await axios.get(HEALTHCHECKS_URL);
-              }
-
-              console.log('Done!');
-            } else {
-              console.error(
-                'We were unable to update the description of the list!'
-              );
-            }
           }
+        }
+
+        // Update description
+        console.log('Updating list description...');
+        const now = new Date();
+
+        const lastUpdate =
+          now.getDate() +
+          ' ' +
+          now.toLocaleString('en-GB', { month: 'long' }) +
+          ' ' +
+          now.getFullYear();
+
+        const description =
+          '**Automated** TMDB list of movies that have been on Netflix.<br>See github.com/paolobasso99/netflix-movies-to-tmdb <br>Last update: ' +
+          lastUpdate;
+
+        const descriptionResult = await tmdbApi.updateListDescription(
+          accessToken,
+          TMDB_LIST,
+          description
+        );
+
+        if (descriptionResult) {
+          if (HEALTHCHECKS_URL) {
+            await axios.get(HEALTHCHECKS_URL);
+          }
+
+          console.log('Done!');
+        } else {
+          console.error(
+            'We were unable to update the description of the list!'
+          );
         }
       } else {
         console.error('No movies found in the provided source!');

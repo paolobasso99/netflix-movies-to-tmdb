@@ -1,6 +1,6 @@
 {
   "name": "trakt-netflix-movies-list",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "This Node.js CLI application pushes the movies that are currently on Netflix to a Trakt playlist. You can see the result here: https://trakt.tv/users/bassopaolo/lists/movies-on-netflix?sort=released,asc",
   "main": "index.js",
   "scripts": {
