@@ -219,7 +219,7 @@ class TmdbApi {
 
     // Add them
     try {
-      const response = await axios.put(
+      const response = await axios.post(
         `https://api.themoviedb.org/4/list/${list}/items`,
         {
           items: movies,
@@ -249,14 +249,14 @@ class TmdbApi {
    * @param {string} list TMDB list id.
    * @returns {(boolean|Array<number>)} The array of ids or false if no list is found.
    */
-  async getMoviesIdsInList(accessToken, list) {
+  async getMoviesIdsInList(list) {
     try {
       const response = await axios.get(
         `https://api.themoviedb.org/4/list/${list}`,
         {
           headers: {
             'Content-Type': 'application/json;charset=utf-8',
-            Authorization: 'Bearer ' + accessToken,
+            Authorization: 'Bearer ' + this.tmdbApiKey,
           },
         }
       );
@@ -264,9 +264,8 @@ class TmdbApi {
       if (response.data) {
         // Get the id, see https://developers.themoviedb.org/4/list/get-list
         const idsArray = Object.keys(response.data.object_ids);
-        return idsArray.map((id) => {
-          id = parseInt(id.split(':')[1]);
-          console.log(id);
+        return idsArray.map((item) => {
+          return parseInt(item.split(':')[1]);
         });
       }
     } catch (error) {

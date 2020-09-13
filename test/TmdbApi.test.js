@@ -65,3 +65,11 @@ describe('TMDB API: requestToken', () => {
     assert.isAtLeast(token.length, 2);
   });
 });
+
+describe('TMDB API: getMoviesIdsInList', () => {
+  it('should return an array', async () => {
+    const ids = await tmdbApi.getMoviesIdsInList(TMDB_LIST);
+
+    assert.isArray(ids);
+  });
+});

@@ -134,59 +134,58 @@ class Commands {
 
         // Get ids of movies already added and filter
         console.log('Getting ids of movies already in the list...');
-        const idsAlreadyAdded = await tmdbApi.getMoviesIdsInList(
-          accessToken,
-          TMDB_LIST
-        );
+        const idsAlreadyAdded = await tmdbApi.getMoviesIdsInList(TMDB_LIST);
 
         console.log('Filtering already added movies...');
         const filtered = ids.filter((id) => {
           return !idsAlreadyAdded.includes(id);
         });
-        console.log(filtered);
+        console.log(filtered.length + ' new movies!');
 
         // Add to TMDB list
-        console.log('Adding movies to the TMDB playlist...');
-        const addResult = await tmdbApi.addMoviesToList(
-          accessToken,
-          filtered,
-          TMDB_LIST
-        );
-
-        if (addResult) {
-          console.log(`Successfully added movies to the TMDB list`);
-
-          // Update description
-          console.log('Updating list description...');
-          const now = new Date();
-
-          const lastUpdate =
-            now.getDate() +
-            ' ' +
-            now.toLocaleString('en-GB', { month: 'long' }) +
-            ' ' +
-            now.getFullYear();
-
-          const description =
-            '**Automated** TMDB list of movies that have been on Netflix.<br>Based on https://github.com/paolobasso99/netflix-movies-to-tmdb <br>Last update: ' +
-            lastUpdate;
-
-          const descriptionResult = await tmdbApi.updateListDescription(
+        if (filtered.length > 0) {
+          console.log('Adding movies to the TMDB playlist...');
+          const addResult = await tmdbApi.addMoviesToList(
             accessToken,
-            TMDB_LIST,
-            description
+            filtered,
+            TMDB_LIST
           );
 
-          if (descriptionResult) {
-            if (HEALTHCHECKS_URL) {
-              await axios.get(HEALTHCHECKS_URL);
-            }
+          if (addResult) {
+            console.log(`Successfully added movies to the TMDB list`);
 
-            console.log('Done!');
-          } else {
-            console.error(
-              'We were unable to update the description of the list!'
+            // Update description
+            console.log('Updating list description...');
+            const now = new Date();
+
+            const lastUpdate =
+              now.getDate() +
+              ' ' +
+              now.toLocaleString('en-GB', { month: 'long' }) +
+              ' ' +
+              now.getFullYear();
+
+            const description =
+              '**Automated** TMDB list of movies that have been on Netflix.<br>Based on https://github.com/paolobasso99/netflix-movies-to-tmdb <br>Last update: ' +
+              lastUpdate;
+
+            const descriptionResult = await tmdbApi.updateListDescription(
+              accessToken,
+              TMDB_LIST,
+              description
             );
+
+            if (descriptionResult) {
+              if (HEALTHCHECKS_URL) {
+                await axios.get(HEALTHCHECKS_URL);
+              }
+
+              console.log('Done!');
+            } else {
+              console.error(
+                'We were unable to update the description of the list!'
+              );
+            }
           }
         }
       } else {
