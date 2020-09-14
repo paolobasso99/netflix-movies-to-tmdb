@@ -48,6 +48,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            cd /srv/trakt-netflix-movies-list
+            cd /srv/netflix-movies-to-tmdb
             git pull origin master
             npm install --production

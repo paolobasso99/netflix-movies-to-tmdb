@@ -1,7 +1,7 @@
 {
-  "name": "trakt-netflix-movies-list",
+  "name": "netflix-movies-to-tmdb",
   "version": "0.1.0",
-  "description": "This Node.js CLI application pushes the movies that are currently on Netflix to a Trakt playlist. You can see the result here: https://trakt.tv/users/bassopaolo/lists/movies-on-netflix?sort=released,asc",
+  "description": "This Node.js CLI application pushes the movies that are currently on Netflix to a TMDB list. You can see the result here: https://www.themoviedb.org/list/7057042",
   "main": "index.js",
   "scripts": {
     "test": "mocha",
@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/paolobasso99/trakt-netflix-movies-list.git"
+    "url": "git+https://github.com/paolobasso99/netflix-movies-to-tmdb.git"
   },
   "author": "Paolo Basso",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/paolobasso99/trakt-netflix-movies-list/issues"
+    "url": "https://github.com/paolobasso99/netflix-movies-to-tmdb/issues"
   },
-  "homepage": "https://github.com/paolobasso99/trakt-netflix-movies-list#readme",
+  "homepage": "https://github.com/paolobasso99/netflix-movies-to-tmdb#readme",
   "dependencies": {
     "app-root-path": "^3.0.0",
     "axios": "^0.19.2",
