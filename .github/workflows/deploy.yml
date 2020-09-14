@@ -48,6 +48,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            cd /srv/${{github.event.trakt-netflix-movies-list}}
+            cd /srv/trakt-netflix-movies-list
             git pull origin master
             npm install --production
