@@ -28,7 +28,7 @@ jobs:
         env:
           MOVIES_SOURCE_URL: ${{ secrets.MOVIES_SOURCE_URL }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-          TMDB_LIST: ${{ secrets.TRAKT_CLIENT_ID }}
+          TMDB_LIST: ${{ secrets.TMDB_LIST }}
           PROXY_ENABLED: ${{ secrets.PROXY_ENABLED }}
           PROXY_HOST: ${{ secrets.PROXY_HOST }}
           PROXY_PORT: ${{ secrets.PROXY_PORT }}
